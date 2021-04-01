@@ -35,19 +35,22 @@ using namespace std;
 class IWareHouse {
 public:
     enum Display {
-        STATUS_BAR = 50,
-        DIALOG,
-        CONSOLE
+        _STATUS_BAR = 50,
+        _ERROR_DIALOG,
+        _INFO_DIALOG,
+        _CONSOLE
     };
 
     enum AvailableOptions {
-        PARTS_FILTERS = 100,
-        CREDENTIALS,
+        _PARTS_FILTERS = 100,
+        _CREDENTIALS,
     };
 
     virtual ~IWareHouse() = default;
 
     virtual bool connectToWarehouse(std::map<wxString, wxString> credentials) = 0;
+
+    virtual std::map<wxString, wxString> getWareHouseDetails() = 0;
 
     virtual void searchForParts(std::string searchTerm) = 0;
 
@@ -59,7 +62,8 @@ public:
     virtual void
     CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) = 0;
 
-    virtual void CallbackForStatusMessage(std::function<void(wxString, Display)> f) = 0;
+    virtual void CallbackForStatusMessage(
+            std::function<void(const wxString &, const wxString &, Display)> f) = 0;
 };
 
 #endif //INVENTREE_IWAREHOUSE_H

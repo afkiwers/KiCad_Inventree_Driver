@@ -64,13 +64,16 @@ bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> credentia
     wxString username = credentials["username"];
     wxString password = credentials["password"];
 
+    getInvenTreeVersion();
+
     getAuthToken(username.ToStdString(), password.ToStdString());
 
     getAllParameterTemplates();
 
     getAllStockLocations();
 
-    fCallbackDisplayStatusMessage("Connected to warehouse as: " + username, IWareHouse::Display::STATUS_BAR);
+    fCallbackDisplayStatusMessage("Connected to InvenTree as: " + username, "Version: " + APIVersion["version"],
+                                  IWareHouse::Display::_STATUS_BAR);
 
     return true;
 }
@@ -121,6 +124,40 @@ void INVENTREE_DRIVER::getSelectedPartDetails(int listPos) {
 
 
 /***** Inventree HTTP requests ********/
+void INVENTREE_DRIVER::getInvenTreeVersion() {
+
+    // create request, and add header information
+    web::http::http_request req(methods::GET);
+    req.headers().add(header_names::content_type, http::details::mime_types::application_json);
+
+    // create http client
+    http_client client(apiURL);
+
+    client.request(req)
+            .then([=](http_response response) {
+                // evaluate server response
+                return evaluateServerResponse(std::move(response));
+            })
+            .then([=](pplx::task<json::value> jsonResponse) {
+                try {
+                    // evaluate JSON response
+                    json::value obj = evaluateJSONResponse(std::move(jsonResponse));
+
+                    if (!obj.is_null()) {
+                        // add new results to vector
+                        for (auto &attr : obj.as_object()) {
+                            APIVersion[attr.first] = removeQuotationMarks(attr.second.serialize());
+                        }
+                    }
+                }
+                catch (http_exception const &e) {
+                    fCallbackDisplayStatusMessage(e.what(), "getInvenTreeVersion()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
+                }
+            })
+            .wait();
+}
+
 void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::string &password) {
     web::credentials cred(username, password); // WinHTTP requires non-empty password
 
@@ -157,8 +194,8 @@ void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::stri
                     }
                 }
                 catch (http_exception const &e) {
-                    std::wcout << e.what() << std::endl;
-//                    m_parentClass->displayStatusMessage( e.what() );
+                    fCallbackDisplayStatusMessage(e.what(), "getAuthToken()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
@@ -200,12 +237,11 @@ void INVENTREE_DRIVER::searchForParts(std::string searchTerm) {
 
                 }
                 catch (http_exception const &e) {
-                    std::wcout << U("Exception: ") << e.what() << std::endl;
+                    fCallbackDisplayStatusMessage(e.what(), "searchForParts()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
-
-//                    m_parentClass->displayStatusMessage( e.what() );
                 }
             })
             .wait();
@@ -270,12 +306,11 @@ void INVENTREE_DRIVER::getAllParameterTemplates() {
                     }
                 }
                 catch (http_exception const &e) {
-                    std::wcout << U("Exception: ") << e.what() << std::endl;
+                    fCallbackDisplayStatusMessage(e.what(), "getAllParameterTemplates()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
-
-//                    m_parentClass->displayStatusMessage( e.what() );
                 }
             })
             .wait();
@@ -364,12 +399,11 @@ void INVENTREE_DRIVER::getAllStockLocations() {
                     }
                 }
                 catch (http_exception const &e) {
-                    std::wcout << U("Exception: ") << e.what() << std::endl;
+                    fCallbackDisplayStatusMessage(e.what(), "getAllStockLocations()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
-
-//                    m_parentClass->displayStatusMessage( e.what() );
                 }
             })
             .wait();
@@ -410,6 +444,9 @@ void INVENTREE_DRIVER::getPartAttributes(int pk) {
                 }
                 catch (http_exception const &e) {
                     m_foundParts.clear();
+
+                    fCallbackDisplayStatusMessage(e.what(), "getPartAttributes()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
@@ -473,9 +510,8 @@ void INVENTREE_DRIVER::getPartParameters(int pk) {
                     }
                 }
                 catch (http_exception const &e) {
-                    std::wcout << U("Exception: ") << e.what() << std::endl;
-
-//                    m_parentClass->displayStatusMessage( e.what() );
+                    fCallbackDisplayStatusMessage(e.what(), "getPartParameters()",
+                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
@@ -545,9 +581,9 @@ pplx::task<json::value> INVENTREE_DRIVER::evaluateServerResponse(http_response r
     std::cout << U("Server responded with: HTTP") << response.status_code() << '\t'
               << U("Reason: ") << response.reason_phrase() << '\n';
 
-//    m_parentClass->displayStatusMessage( U( "Server responded with: HTTP" )
-//                                         + std::to_string( response.status_code() ) + '\t'
-//                                         + U( "Reason: " ) + response.reason_phrase() );
+    fCallbackDisplayStatusMessage(
+            "Error Code:" + std::to_string(response.status_code()) + '\n' + response.reason_phrase(),
+            "evaluateServerResponse(http_response response)", IWareHouse::Display::_ERROR_DIALOG);
 
     return pplx::task_from_result(json::value());
 }
@@ -602,6 +638,10 @@ wxString INVENTREE_DRIVER::formatNameString(wxString text) {
     return text;
 }
 
+std::map<wxString, wxString> INVENTREE_DRIVER::getWareHouseDetails() {
+    return APIVersion;
+}
+
 /***** Callback functions ********/
 void INVENTREE_DRIVER::CallbackForFoundParts(std::function<void(std::vector<wxString>)> f) {
     fCallbackDisplayFoundParts = f;
@@ -611,7 +651,8 @@ void INVENTREE_DRIVER::CallbackForPartDetails(std::function<void(std::map<wxStri
     fCallbackDisplayPartParameters = f;
 }
 
-void INVENTREE_DRIVER::CallbackForStatusMessage(std::function<void(wxString, IWareHouse::Display)> f) {
+void INVENTREE_DRIVER::CallbackForStatusMessage(
+        std::function<void(const wxString &, const wxString &, IWareHouse::Display)> f) {
     fCallbackDisplayStatusMessage = f;
 }
 

@@ -220,9 +220,12 @@ private:
 
     void CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) override;
 
-    void CallbackForStatusMessage(std::function<void(wxString, IWareHouse::Display)> f) override;
+    void CallbackForStatusMessage(
+            std::function<void(const wxString &, const wxString &, Display)> f) override;
 
     bool connectToWarehouse(std::map<wxString, wxString> credentials) override;
+
+    std::map<wxString, wxString> getWareHouseDetails() override;
 
     void getAuthToken(const std::string &username, const std::string &password);
 
@@ -233,6 +236,8 @@ private:
     void getPartParameters(int jsonResponse);
 
     void getPartAttributes(int pk);
+
+    void getInvenTreeVersion();
 
     void getAllParameterTemplates();
 
@@ -262,16 +267,18 @@ private:
     std::vector<STOCK_LOCATION> m_stockLocations;
     std::vector<PART_PARAMETER> m_partParameters;
     std::vector<PART_ATTRIBUTE> m_partAttributes;
+    std::map<wxString, wxString> APIVersion;
 
     // URL to warehouse API
-    //    std::string apiURL = "http://127.0.0.1:8000/api/";
     std::string serverURL = "http://192.168.10.8:9080";
     std::string apiURL = serverURL + "/api/";
 
 
     std::function<void(std::vector<wxString>)> fCallbackDisplayFoundParts;
     std::function<void(std::map<wxString, wxString>)> fCallbackDisplayPartParameters;
-    std::function<void(wxString, IWareHouse::Display)> fCallbackDisplayStatusMessage;
+    std::function<void(const wxString &, const wxString &,
+                       IWareHouse::Display)> fCallbackDisplayStatusMessage;
+
 };
 
 
