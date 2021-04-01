@@ -26,6 +26,8 @@
 #include <wx/image.h>
 #include <curl/curl.h>
 
+#include "IWareHouse.h"
+
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
 #include <cpprest/http_listener.h>   // HTTP server
@@ -44,29 +46,6 @@ using namespace web::http::client;    // HTTP client features
 
 using namespace web::json;            // JSON library
 using namespace pplx;                 // PPL interfaces
-
-/**
- * This interface is shared between KiCad and the Warehouse -> In this case Inventree
- */
-class IWareHouse {
-public:
-    virtual ~IWareHouse() = default;
-
-    virtual bool connectToWarehouse(std::map<wxString, wxString> credentials) = 0;
-
-    virtual void searchForParts(std::string searchTerm) = 0;
-
-    virtual void getSelectedPartDetails(int listPos) = 0;
-
-    // callbacks
-    virtual void CallbackForFoundParts(std::function<void(std::vector<wxString>)> f) = 0;
-
-    virtual void
-    CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) = 0;
-
-    virtual void
-    CallbackForStatusMessage(std::function<void(wxString, int)> f) = 0;
-};
 
 
 /**
@@ -241,7 +220,7 @@ private:
 
     void CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) override;
 
-    void CallbackForStatusMessage(std::function<void(wxString, int)> f) override;
+    void CallbackForStatusMessage(std::function<void(wxString, IWareHouse::Display)> f) override;
 
     bool connectToWarehouse(std::map<wxString, wxString> credentials) override;
 
@@ -292,7 +271,7 @@ private:
 
     std::function<void(std::vector<wxString>)> fCallbackDisplayFoundParts;
     std::function<void(std::map<wxString, wxString>)> fCallbackDisplayPartParameters;
-    std::function<void(wxString, int)> fCallbackDisplayStatusMessage;
+    std::function<void(wxString, IWareHouse::Display)> fCallbackDisplayStatusMessage;
 };
 
 

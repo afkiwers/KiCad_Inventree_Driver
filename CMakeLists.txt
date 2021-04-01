@@ -9,7 +9,7 @@ include(${wxWidgets_USE_FILE})
 find_package(cpprestsdk REQUIRED)
 
 
-add_library(inventree SHARED inventree.cpp inventree.h)
+add_library(inventree SHARED inventree.cpp inventree.h IWareHouse.h)
 
 
 target_link_libraries(inventree

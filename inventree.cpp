@@ -70,7 +70,7 @@ bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> credentia
 
     getAllStockLocations();
 
-    fCallbackDisplayStatusMessage("Connected to warehouse as: " + username, 1);
+    fCallbackDisplayStatusMessage("Connected to warehouse as: " + username, IWareHouse::Display::STATUS_BAR);
 
     return true;
 }
@@ -611,7 +611,7 @@ void INVENTREE_DRIVER::CallbackForPartDetails(std::function<void(std::map<wxStri
     fCallbackDisplayPartParameters = f;
 }
 
-void INVENTREE_DRIVER::CallbackForStatusMessage(std::function<void(wxString, int)> f) {
+void INVENTREE_DRIVER::CallbackForStatusMessage(std::function<void(wxString, IWareHouse::Display)> f) {
     fCallbackDisplayStatusMessage = f;
 }
 
