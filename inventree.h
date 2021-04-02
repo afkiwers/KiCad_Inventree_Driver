@@ -224,17 +224,17 @@ private:
     void CallbackForStatusMessage(
             std::function<void(const wxString &, const wxString &, Display)> f) override;
 
-    std::vector<IWareHouse::DriverOptions> getDriverOptions() override;
+    std::vector<IWareHouse::WareHouseOptions> wareHouseOptions() override;
 
     bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) override;
 
-    std::map<wxString, wxString> getWareHouseDetails() override;
+    std::map<wxString, wxString> wareHouseDescription() override;
 
     void getAuthToken(const std::string &username, const std::string &password);
 
-    void searchForParts(std::string searchTerm) override;
+    void searchWareHouseForParts(std::string searchTerm) override;
 
-    void getSelectedPartDetails(int listPos) override;
+    void getSelectedPartParameters(int listPos) override;
 
     void getPartParameters(int jsonResponse);
 
@@ -242,7 +242,7 @@ private:
 
     void getInvenTreeVersion();
 
-    std::map<wxString, std::vector<wxString>> getFilters() override;
+    std::map<wxString, std::vector<wxString>> Filters() override;
 
     void getAllParameterTemplates();
 

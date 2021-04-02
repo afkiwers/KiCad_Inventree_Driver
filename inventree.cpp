@@ -79,7 +79,7 @@ bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> args, int
     return true;
 }
 
-void INVENTREE_DRIVER::getSelectedPartDetails(int listPos) {
+void INVENTREE_DRIVER::getSelectedPartParameters(int listPos) {
     std::map<wxString, wxString> attributes;
 
     // Create iterator pointing to first element of list
@@ -123,16 +123,16 @@ void INVENTREE_DRIVER::getSelectedPartDetails(int listPos) {
     }
 }
 
-std::vector<IWareHouse::DriverOptions> INVENTREE_DRIVER::getDriverOptions() {
-    std::vector<IWareHouse::DriverOptions> options;
+std::vector<IWareHouse::WareHouseOptions> INVENTREE_DRIVER::wareHouseOptions() {
+    std::vector<IWareHouse::WareHouseOptions> options;
 
-    options.push_back(IWareHouse::DriverOptions::_CREDENTIALS);
-    options.push_back(IWareHouse::DriverOptions::_PART_PARAMETER_FILTER);
+    options.push_back(IWareHouse::WareHouseOptions::_CREDENTIALS);
+    options.push_back(IWareHouse::WareHouseOptions::_PART_PARAMETER_FILTER);
 
     return options;
 }
 
-std::map<wxString, std::vector<wxString>> INVENTREE_DRIVER::getFilters() {
+std::map<wxString, std::vector<wxString>> INVENTREE_DRIVER::Filters() {
 
     // TODO: This is just a mockup and needs to be coded properly
     std::map<wxString, std::vector<wxString>> filters;
@@ -236,7 +236,7 @@ void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::stri
             .wait();
 }
 
-void INVENTREE_DRIVER::searchForParts(std::string searchTerm) {
+void INVENTREE_DRIVER::searchWareHouseForParts(std::string searchTerm) {
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
@@ -272,7 +272,7 @@ void INVENTREE_DRIVER::searchForParts(std::string searchTerm) {
 
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "searchForParts()",
+                    fCallbackDisplayStatusMessage(e.what(), "searchWareHouseForParts()",
                                                   IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
@@ -672,7 +672,7 @@ wxString INVENTREE_DRIVER::formatNameString(wxString text) {
     return text;
 }
 
-std::map<wxString, wxString> INVENTREE_DRIVER::getWareHouseDetails() {
+std::map<wxString, wxString> INVENTREE_DRIVER::wareHouseDescription() {
     return APIVersion;
 }
 
