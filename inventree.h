@@ -17,6 +17,9 @@
 #ifndef WAREHOUSE_INTERFACE_H
 #define WAREHOUSE_INTERFACE_H
 
+// Import the standardised interface
+#include "IWareHouse.h"
+
 #include <functional>
 #include <cstdio>
 #include <utility>
@@ -25,8 +28,6 @@
 #include <wx/string.h>
 #include <wx/image.h>
 #include <curl/curl.h>
-
-#include "IWareHouse.h"
 
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
@@ -216,14 +217,16 @@ public:
 
 private:
 
-    void CallbackForFoundParts(std::function<void(std::vector<wxString>)> f) override;
+    void CallbackForFoundParts(std::function<void(std::vector<wxString>, int)> f) override;
 
     void CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) override;
 
     void CallbackForStatusMessage(
             std::function<void(const wxString &, const wxString &, Display)> f) override;
 
-    bool connectToWarehouse(std::map<wxString, wxString> credentials) override;
+    std::vector<IWareHouse::DriverOptions> getDriverOptions() override;
+
+    bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) override;
 
     std::map<wxString, wxString> getWareHouseDetails() override;
 
@@ -238,6 +241,8 @@ private:
     void getPartAttributes(int pk);
 
     void getInvenTreeVersion();
+
+    std::map<wxString, std::vector<wxString>> getFilters() override;
 
     void getAllParameterTemplates();
 
@@ -273,8 +278,9 @@ private:
     std::string serverURL = "http://192.168.10.8:9080";
     std::string apiURL = serverURL + "/api/";
 
+    int m_driverID = -1;
 
-    std::function<void(std::vector<wxString>)> fCallbackDisplayFoundParts;
+    std::function<void(std::vector<wxString>, int)> fCallbackDisplayFoundParts;
     std::function<void(std::map<wxString, wxString>)> fCallbackDisplayPartParameters;
     std::function<void(const wxString &, const wxString &,
                        IWareHouse::Display)> fCallbackDisplayStatusMessage;

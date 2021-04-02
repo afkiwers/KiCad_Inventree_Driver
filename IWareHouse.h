@@ -41,14 +41,18 @@ public:
         _CONSOLE
     };
 
-    enum AvailableOptions {
-        _PARTS_FILTERS = 100,
-        _CREDENTIALS,
+    enum DriverOptions {
+        _PART_PARAMETER_FILTER = 100,
+        _CREDENTIALS
     };
 
     virtual ~IWareHouse() = default;
 
-    virtual bool connectToWarehouse(std::map<wxString, wxString> credentials) = 0;
+    /*
+     * To tell various drivers apart, each driver must store it's assigned driver ID internally
+     * and return it with the search results
+     * */
+    virtual bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) = 0;
 
     virtual std::map<wxString, wxString> getWareHouseDetails() = 0;
 
@@ -56,8 +60,15 @@ public:
 
     virtual void getSelectedPartDetails(int listPos) = 0;
 
+    virtual std::map<wxString, std::vector<wxString>> getFilters() = 0;
+
+    /*
+    * This method is reports back the drivers capabilities and requirements such as filters or credentials etc.
+    * */
+    virtual std::vector<DriverOptions> getDriverOptions() = 0;
+
     // Callbacks
-    virtual void CallbackForFoundParts(std::function<void(std::vector<wxString>)> f) = 0;
+    virtual void CallbackForFoundParts(std::function<void(std::vector<wxString>, int)> f) = 0;
 
     virtual void
     CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) = 0;
