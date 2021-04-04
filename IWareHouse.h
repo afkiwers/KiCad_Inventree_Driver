@@ -54,7 +54,7 @@ public:
      * */
     virtual bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) = 0;
 
-    virtual std::map<wxString, wxString> wareHouseDescription() = 0;
+    virtual wxString wareHouseShortDescription() = 0;
 
     virtual void searchWareHouseForParts(std::string searchTerm) = 0;
 

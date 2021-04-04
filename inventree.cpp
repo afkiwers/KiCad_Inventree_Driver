@@ -672,8 +672,9 @@ wxString INVENTREE_DRIVER::formatNameString(wxString text) {
     return text;
 }
 
-std::map<wxString, wxString> INVENTREE_DRIVER::wareHouseDescription() {
-    return APIVersion;
+wxString INVENTREE_DRIVER::wareHouseShortDescription() {
+
+    return "Open Source Inventory Management System; Driver Vers: 0.0.2 pre";
 }
 
 /***** Callback functions ********/

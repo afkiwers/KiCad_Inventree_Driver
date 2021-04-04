@@ -228,7 +228,7 @@ private:
 
     bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) override;
 
-    std::map<wxString, wxString> wareHouseDescription() override;
+    wxString wareHouseShortDescription() override;
 
     void getAuthToken(const std::string &username, const std::string &password);
 
