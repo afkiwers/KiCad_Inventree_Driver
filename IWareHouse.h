@@ -44,7 +44,8 @@ public:
     enum WareHouseOptions {
         _PART_PARAMETER_FILTER = 100,
         _CREDENTIALS,
-        _SERVER_SETTINGS
+        _SERVER_SETTINGS,
+        _ADD_PART_TO_WAREHOUSE
     };
 
     virtual ~IWareHouse() = default;
@@ -54,6 +55,12 @@ public:
      * and return it with the search results
      * */
     virtual bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) = 0;
+
+    /*
+     * If several drivers are used and this warehouse does not have a part which is available from
+     * the Mouser or DigiKey driver, This function will take the parameter and create one.
+     * */
+    virtual bool addPartToWareHouse(std::map<wxString, wxString> parameters) = 0;
 
     /*
      * A short description of the driver which will be shown to the user

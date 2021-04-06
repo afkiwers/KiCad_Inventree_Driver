@@ -244,6 +244,8 @@ private:
 
     void getInvenTreeVersion();
 
+    bool addPartToWareHouse(std::map<wxString, wxString> parameters) override;
+
     std::map<wxString, std::vector<wxString>> Filters() override;
 
     void getAllParameterTemplates();

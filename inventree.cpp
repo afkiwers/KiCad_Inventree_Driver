@@ -57,10 +57,10 @@ bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> args, int
 
     if (args.empty()) {
 
-        fCallbackDisplayStatusMessage(
-                "No credentials defined! Inventree needs credentials to allow access to the "
-                "database",
-                "Initialisation Error", IWareHouse::Display::_ERROR_DIALOG);
+//        fCallbackDisplayStatusMessage(
+//                "No credentials defined! Inventree needs credentials to allow access to the "
+//                "database",
+//                "Initialisation Error", IWareHouse::Display::_ERROR_DIALOG);
 
         return false;
     }
@@ -134,6 +134,7 @@ std::vector<IWareHouse::WareHouseOptions> INVENTREE_DRIVER::wareHouseOptions() {
     options.push_back(IWareHouse::WareHouseOptions::_CREDENTIALS);
     options.push_back(IWareHouse::WareHouseOptions::_PART_PARAMETER_FILTER);
     options.push_back(IWareHouse::WareHouseOptions::_SERVER_SETTINGS);
+    options.push_back(IWareHouse::WareHouseOptions::_ADD_PART_TO_WAREHOUSE);
 
     return options;
 }
@@ -186,8 +187,8 @@ void INVENTREE_DRIVER::getInvenTreeVersion() {
                     }
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "getInvenTreeVersion()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "getInvenTreeVersion()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
@@ -228,17 +229,17 @@ void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::stri
 
                         getAllStockLocations();
 
-                        fCallbackDisplayStatusMessage("Connected to InvenTree as: " + username,
-                                                      "Version: " + APIVersion["version"],
-                                                      IWareHouse::Display::_STATUS_BAR);
+//                        fCallbackDisplayStatusMessage("Connected to InvenTree as: " + username,
+//                                                      "Version: " + APIVersion["version"],
+//                                                      IWareHouse::Display::_STATUS_BAR);
 
                     } else {
                         std::cout << "Empty token response..." << std::endl;
                     }
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "Server Message",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "Server Message",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
 
             })
@@ -283,8 +284,8 @@ void INVENTREE_DRIVER::searchWareHouseForParts(std::string searchTerm) {
 
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "searchWareHouseForParts()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "searchWareHouseForParts()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
@@ -354,8 +355,8 @@ void INVENTREE_DRIVER::getAllParameterTemplates() {
                     }
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "getAllParameterTemplates()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "getAllParameterTemplates()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
@@ -449,8 +450,8 @@ void INVENTREE_DRIVER::getAllStockLocations() {
                     }
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "getAllStockLocations()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "getAllStockLocations()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
 
                     // clear parts and update connection status msg
                     m_foundParts.clear();
@@ -497,8 +498,8 @@ void INVENTREE_DRIVER::getPartAttributes(int pk) {
                 catch (http_exception const &e) {
                     m_foundParts.clear();
 
-                    fCallbackDisplayStatusMessage(e.what(), "getPartAttributes()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "getPartAttributes()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
@@ -564,12 +565,23 @@ void INVENTREE_DRIVER::getPartParameters(int pk) {
                     }
                 }
                 catch (http_exception const &e) {
-                    fCallbackDisplayStatusMessage(e.what(), "getPartParameters()",
-                                                  IWareHouse::Display::_ERROR_DIALOG);
+//                    fCallbackDisplayStatusMessage(e.what(), "getPartParameters()",
+//                                                  IWareHouse::Display::_ERROR_DIALOG);
                 }
             })
             .wait();
 }
+
+bool INVENTREE_DRIVER::addPartToWareHouse(std::map<wxString, wxString> parameters) {
+
+    // TODO: do something....
+    for (auto &p : parameters) {
+        std::cout << p.first << ": " << p.first << std::endl;
+    }
+
+    return true;
+}
+
 
 /***** General helper functions ********/
 size_t callbackFunctionWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -632,10 +644,10 @@ pplx::task<json::value> INVENTREE_DRIVER::evaluateServerResponse(http_response r
         return response.extract_json();
     }
 
-    fCallbackDisplayStatusMessage(
-            wxString::Format("Error during communication with InvenTree.\nError Code: %d ( %s )",
-                             response.status_code(), response.reason_phrase()),
-            "Server Response", IWareHouse::Display::_ERROR_DIALOG);
+//    fCallbackDisplayStatusMessage(
+//            wxString::Format("Error during communication with InvenTree.\nError Code: %d ( %s )",
+//                             response.status_code(), response.reason_phrase()),
+//            "Server Response", IWareHouse::Display::_ERROR_DIALOG);
 
     return pplx::task_from_result(json::value());
 }
@@ -646,9 +658,9 @@ json::value INVENTREE_DRIVER::evaluateJSONResponse(pplx::task<json::value> jsonR
         return obj;
     }
 
-    fCallbackDisplayStatusMessage(
-            "Server did not respond as expected. Not sure what to do... I think I am cooked... I am so sorry...",
-            "Server Response", IWareHouse::Display::_ERROR_DIALOG);
+//    fCallbackDisplayStatusMessage(
+//            "Server did not respond as expected. Not sure what to do... I think I am cooked... I am so sorry...",
+//            "Server Response", IWareHouse::Display::_ERROR_DIALOG);
 
     return json::value();
 }
