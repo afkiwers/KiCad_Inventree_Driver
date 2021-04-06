@@ -50,6 +50,7 @@ INVENTREE_DRIVER::INVENTREE_DRIVER() = default;
 INVENTREE_DRIVER::~INVENTREE_DRIVER() = default;
 
 bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> args, int driverID) {
+    std::cout << "connectToWarehouse" << std::endl;
 
     // save assigned driver ID, this ID is assigned randomly by the caller
     m_driverID = driverID;
@@ -63,6 +64,10 @@ bool INVENTREE_DRIVER::connectToWarehouse(std::map<wxString, wxString> args, int
 
         return false;
     }
+
+    // construct server url
+    m_ServerURL = wxString::Format("%s:%s", args["server_url"], args["server_port"]).ToStdString();
+    m_ApiURL = m_ServerURL + "/api/";
 
     // request auth token from warehouse API
     wxString username = args["username"];
@@ -99,7 +104,7 @@ void INVENTREE_DRIVER::getSelectedPartParameters(int listPos) {
         getPartParameters(pk);
 
         // download image from inventree
-        if (!downloadImagesFile(serverURL + part[U("image")].as_string())) {
+        if (!downloadImagesFile(m_ServerURL + part[U("image")].as_string())) {
             std::cout << "!! Failed to download file:";
         } else {
             std::cout << "Load images from file..." << std::endl;
@@ -116,7 +121,7 @@ void INVENTREE_DRIVER::getSelectedPartParameters(int listPos) {
                 params[formatNameString(a.m_name)] = a.m_value;
         }
 
-        fCallbackDisplayPartParameters(params);
+        fCallbackDisplayPartParameters(params, m_driverID);
     }
     catch (...) {
         std::cout << "Error occurred" << std::endl;
@@ -128,6 +133,7 @@ std::vector<IWareHouse::WareHouseOptions> INVENTREE_DRIVER::wareHouseOptions() {
 
     options.push_back(IWareHouse::WareHouseOptions::_CREDENTIALS);
     options.push_back(IWareHouse::WareHouseOptions::_PART_PARAMETER_FILTER);
+    options.push_back(IWareHouse::WareHouseOptions::_SERVER_SETTINGS);
 
     return options;
 }
@@ -153,13 +159,14 @@ std::map<wxString, std::vector<wxString>> INVENTREE_DRIVER::Filters() {
 
 /***** Inventree HTTP requests ********/
 void INVENTREE_DRIVER::getInvenTreeVersion() {
+    std::cout << "getInvenTreeVersion" << std::endl;
 
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
 
     // create http client
-    http_client client(apiURL);
+    http_client client(m_ApiURL);
 
     client.request(req)
             .then([=](http_response response) {
@@ -189,11 +196,13 @@ void INVENTREE_DRIVER::getInvenTreeVersion() {
 void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::string &password) {
     web::credentials cred(username, password); // WinHTTP requires non-empty password
 
+    std::cout << "getAuthToken" << std::endl;
+
     http_client_config client_config;
     client_config.set_credentials(cred);
 
     // create http client with base url
-    http_client client(apiURL + "user/token/", client_config);
+    http_client client(m_ApiURL + "user/token/", client_config);
 
     // add request type
     web::http::http_request req(methods::GET);
@@ -237,6 +246,8 @@ void INVENTREE_DRIVER::getAuthToken(const std::string &username, const std::stri
 }
 
 void INVENTREE_DRIVER::searchWareHouseForParts(std::string searchTerm) {
+    std::cout << "searchWareHouseForParts" << std::endl;
+
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
@@ -244,7 +255,7 @@ void INVENTREE_DRIVER::searchWareHouseForParts(std::string searchTerm) {
     req.set_request_uri("?search=" + uri::encode_data_string(searchTerm));
 
     // create http client
-    http_client client(apiURL + "part/");
+    http_client client(m_ApiURL + "part/");
 
     client.request(req)
             .then([=](http_response response) {
@@ -283,13 +294,15 @@ void INVENTREE_DRIVER::searchWareHouseForParts(std::string searchTerm) {
 }
 
 void INVENTREE_DRIVER::getAllParameterTemplates() {
+    std::cout << "getAllParameterTemplates" << std::endl;
+
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
     req.headers().add("Authorization", "Token " + m_apiToken);
 
     // create http client
-    http_client client(apiURL + "part/parameter/template/");
+    http_client client(m_ApiURL + "part/parameter/template/");
 
     client.request(req)
             .then([=](http_response response) {
@@ -352,13 +365,15 @@ void INVENTREE_DRIVER::getAllParameterTemplates() {
 }
 
 void INVENTREE_DRIVER::getAllStockLocations() {
+    std::cout << "getAllStockLocations" << std::endl;
+
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
     req.headers().add("Authorization", "Token " + m_apiToken);
 
     // create http client
-    http_client client(apiURL + "stock/location/");
+    http_client client(m_ApiURL + "stock/location/");
 
     client.request(req)
             .then([=](http_response response) {
@@ -445,13 +460,15 @@ void INVENTREE_DRIVER::getAllStockLocations() {
 }
 
 void INVENTREE_DRIVER::getPartAttributes(int pk) {
+    std::cout << "getPartAttributes" << std::endl;
+
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
     req.headers().add("Authorization", "Token " + m_apiToken);
 
     // create http client
-    http_client client(apiURL + "part/" + std::to_string(pk) + "/");
+    http_client client(m_ApiURL + "part/" + std::to_string(pk) + "/");
 
     client.request(req)
             .then([=](http_response response) {
@@ -488,6 +505,8 @@ void INVENTREE_DRIVER::getPartAttributes(int pk) {
 }
 
 void INVENTREE_DRIVER::getPartParameters(int pk) {
+    std::cout << "getPartParameters" << std::endl;
+
     // create request, and add header information
     web::http::http_request req(methods::GET);
     req.headers().add(header_names::content_type, http::details::mime_types::application_json);
@@ -495,7 +514,7 @@ void INVENTREE_DRIVER::getPartParameters(int pk) {
     req.set_request_uri("?part=" + std::to_string(pk));
 
     // create http client
-    http_client client(apiURL + "part/parameter/");
+    http_client client(m_ApiURL + "part/parameter/");
 
     client.request(req)
             .then([=](http_response response) {
@@ -674,7 +693,14 @@ wxString INVENTREE_DRIVER::formatNameString(wxString text) {
 
 wxString INVENTREE_DRIVER::wareHouseShortDescription() {
 
-    return "Open Source Inventory Management System; Driver Vers: 0.0.2 pre";
+    return "Open Source Inventory Management System";
+//    return "Dummy Driver Which Connects To InvenTree";
+}
+
+wxString INVENTREE_DRIVER::driverVersion() {
+
+    return "0.0.1 pre";
+//    return "0.2.1 pre";
 }
 
 /***** Callback functions ********/
@@ -682,7 +708,7 @@ void INVENTREE_DRIVER::CallbackForFoundParts(std::function<void(std::vector<wxSt
     fCallbackDisplayFoundParts = f;
 }
 
-void INVENTREE_DRIVER::CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) {
+void INVENTREE_DRIVER::CallbackForPartDetails(std::function<void(std::map<wxString, wxString>, int)> f) {
     fCallbackDisplayPartParameters = f;
 }
 

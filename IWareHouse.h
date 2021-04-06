@@ -43,7 +43,8 @@ public:
 
     enum WareHouseOptions {
         _PART_PARAMETER_FILTER = 100,
-        _CREDENTIALS
+        _CREDENTIALS,
+        _SERVER_SETTINGS
     };
 
     virtual ~IWareHouse() = default;
@@ -54,7 +55,15 @@ public:
      * */
     virtual bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) = 0;
 
+    /*
+     * A short description of the driver which will be shown to the user
+     * */
     virtual wxString wareHouseShortDescription() = 0;
+
+    /*
+     * The version of the driver which will be shown to the user
+     * */
+    virtual wxString driverVersion() = 0;
 
     virtual void searchWareHouseForParts(std::string searchTerm) = 0;
 
@@ -71,7 +80,7 @@ public:
     virtual void CallbackForFoundParts(std::function<void(std::vector<wxString>, int)> f) = 0;
 
     virtual void
-    CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) = 0;
+    CallbackForPartDetails(std::function<void(std::map<wxString, wxString>, int)> f) = 0;
 
     virtual void CallbackForStatusMessage(
             std::function<void(const wxString &, const wxString &, Display)> f) = 0;

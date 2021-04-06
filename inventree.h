@@ -219,7 +219,7 @@ private:
 
     void CallbackForFoundParts(std::function<void(std::vector<wxString>, int)> f) override;
 
-    void CallbackForPartDetails(std::function<void(std::map<wxString, wxString>)> f) override;
+    void CallbackForPartDetails(std::function<void(std::map<wxString, wxString>, int)> f) override;
 
     void CallbackForStatusMessage(
             std::function<void(const wxString &, const wxString &, Display)> f) override;
@@ -229,6 +229,8 @@ private:
     bool connectToWarehouse(std::map<wxString, wxString> args, int driverID) override;
 
     wxString wareHouseShortDescription() override;
+
+    wxString driverVersion() override;
 
     void getAuthToken(const std::string &username, const std::string &password);
 
@@ -275,13 +277,13 @@ private:
     std::map<wxString, wxString> APIVersion;
 
     // URL to warehouse API
-    std::string serverURL = "http://192.168.10.8:9080";
-    std::string apiURL = serverURL + "/api/";
+    std::string m_ServerURL;
+    std::string m_ApiURL;
 
     int m_driverID = -1;
 
     std::function<void(std::vector<wxString>, int)> fCallbackDisplayFoundParts;
-    std::function<void(std::map<wxString, wxString>)> fCallbackDisplayPartParameters;
+    std::function<void(std::map<wxString, wxString>, int)> fCallbackDisplayPartParameters;
     std::function<void(const wxString &, const wxString &,
                        IWareHouse::Display)> fCallbackDisplayStatusMessage;
 
